@@ -1,1 +1,1 @@
-A multithreaded e-mail system in Java which uses the c3p0 connection pooling library to pool client connections to the database for storing, reading and deleting emails. It also allows clients to send attachments with emails (images, text files and audio clips). 
+A multithreaded e-mail system in Java which allows clients to send, read and delete emails. It also allows clients to send attachments with emails (images, text files and audio clips). 
