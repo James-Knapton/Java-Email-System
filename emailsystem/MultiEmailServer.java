@@ -2,7 +2,8 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
-
+import java.sql.*;
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 public class MultiEmailServer
 {
@@ -132,8 +133,6 @@ class ClientHandler extends Thread
         }
     }
 
-
-
     private static void doSend(String recipient, String username,
                                ObjectInputStream inStream, ConcurrentLinkedDeque<String> emails)
 
@@ -193,7 +192,6 @@ class ClientHandler extends Thread
 
                     if(checkmail.contains(username))
                     {
-
                         String msg = checkmail.substring(checkmail.indexOf(username)
                                 + username.length());
 
@@ -201,6 +199,7 @@ class ClientHandler extends Thread
                         {
                             if(msg.contains(".png"))
                             {
+
                                 outStream.writeUTF(msg);
                                 outStream.flush();
 

@@ -6,12 +6,11 @@ import java.awt.event.*;
 import java.net.*;
 import java.io.*;
 import java.awt.*;
+import java.applet.*;
 
 /*
  * Created by JFormDesigner on Sun Jun 09 15:11:28 BST 2019
  */
-
-
 
 /**
  * @author James Knapton
@@ -25,6 +24,8 @@ public class MultiEmailClient extends JFrame  {
     private static String username;
     private static InetAddress host;
     private static Socket socket;
+    private AudioClip clip;
+    DefaultListModel listModel = new DefaultListModel();
 
     public static void main(String[] args)
     {
@@ -89,10 +90,12 @@ public class MultiEmailClient extends JFrame  {
         label2.setText("Welcome: " + username);
     }
 
-    private void sendActionPerformed(ActionEvent event) {
+    private void sendActionPerformed(ActionEvent event)
+    {
         String recipient, email;
         recipient = recipientTxtF.getText();
         email = emailToSend.getText() + attachmentToSend.getText();
+
         try
         {
             outStream.writeUTF("send");
@@ -102,6 +105,7 @@ public class MultiEmailClient extends JFrame  {
         {
             e.printStackTrace();
         }
+
         try
         {
             outStream.writeUTF(recipient);
@@ -111,6 +115,7 @@ public class MultiEmailClient extends JFrame  {
         {
             e.printStackTrace();
         }
+
         try
         {
             outStream.writeUTF(email);
@@ -130,7 +135,7 @@ public class MultiEmailClient extends JFrame  {
 
         try
         {
-            outStream.writeUTF("read");
+            outStream   .writeUTF("read");
             outStream.flush();
         }
         catch (IOException e)
@@ -167,6 +172,7 @@ public class MultiEmailClient extends JFrame  {
                 message = inStream.readUTF();
                 outStream.writeUTF(message);
                 System.out.println(message);
+
                 if(message.contains(".png"))
                 {
 
@@ -187,7 +193,6 @@ public class MultiEmailClient extends JFrame  {
 
                     String newMsg = message.substring(0, message.indexOf("C"));
 
-
                     textArea1.append(newMsg + "\n");
 
                     byte[] byteArray = (byte[])inStream.readObject();
@@ -198,7 +203,7 @@ public class MultiEmailClient extends JFrame  {
 
                     mediaStream.write(byteArray);
 
-                    //    clip = Applet.newAudioClip(new URL("file:sound.au"));
+                    clip = Applet.newAudioClip(new URL("file:sound.au"));
                 }
                 else if(message.contains(".txt"))
                 {
@@ -230,13 +235,13 @@ public class MultiEmailClient extends JFrame  {
                 }
                 else
                 {
-                    textArea1.append(message + "\n");
+                    listModel.addElement(message);
+                 //   textArea1.append(message + "\n");
                 }
 
             }
             catch (IOException | ClassNotFoundException  e)
             {
-
                 e.printStackTrace();
             }
 
@@ -256,6 +261,22 @@ public class MultiEmailClient extends JFrame  {
         System.exit(0);
     }
 
+    private void attachmentToSendInputMethodTextChanged(InputMethodEvent e) {
+        // TODO add your code here
+    }
+
+    private void button1ActionPerformed(ActionEvent e) {
+        clip.play();
+    }
+
+    private void deleteActionPerformed(ActionEvent e) {
+        String mailToDelete = (String) list1.getSelectedValue();
+        listModel.removeElement(mailToDelete);
+        // TODO add your code here
+    }
+
+
+
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents
         // Generated using JFormDesigner non-commercial license
@@ -272,6 +293,10 @@ public class MultiEmailClient extends JFrame  {
         textArea1 = new JTextArea();
         label1 = new JLabel();
         label2 = new JLabel();
+        play = new JButton();
+        scrollPane2 = new JScrollPane();
+        list1 = new JList(listModel);
+        delete = new JButton();
 
         //======== this ========
         var contentPane = getContentPane();
@@ -284,6 +309,16 @@ public class MultiEmailClient extends JFrame  {
 
         //---- attachmentPrompt ----
         attachmentPrompt.setText("Enter attachment: ");
+
+        //---- attachmentToSend ----
+        attachmentToSend.addInputMethodListener(new InputMethodListener() {
+            @Override
+            public void caretPositionChanged(InputMethodEvent e) {}
+            @Override
+            public void inputMethodTextChanged(InputMethodEvent e) {
+                attachmentToSendInputMethodTextChanged(e);
+            }
+        });
 
         //---- send ----
         send.setText("Send");
@@ -308,81 +343,110 @@ public class MultiEmailClient extends JFrame  {
         //---- label2 ----
         label2.setText("Welcome ");
 
+        //---- play ----
+        play.setText("Play");
+        play.addActionListener(e -> button1ActionPerformed(e));
+
+        //======== scrollPane2 ========
+        {
+            scrollPane2.setViewportView(list1);
+        }
+
+        //---- delete ----
+        delete.setText("Delete");
+        delete.addActionListener(e -> deleteActionPerformed(e));
+
         GroupLayout contentPaneLayout = new GroupLayout(contentPane);
         contentPane.setLayout(contentPaneLayout);
         contentPaneLayout.setHorizontalGroup(
             contentPaneLayout.createParallelGroup()
                 .addGroup(contentPaneLayout.createSequentialGroup()
-                    .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                    .addGroup(contentPaneLayout.createParallelGroup()
                         .addGroup(contentPaneLayout.createSequentialGroup()
-                            .addGap(105, 105, 105)
-                            .addComponent(send)
-                            .addGap(53, 53, 53)
-                            .addComponent(read)
-                            .addGap(34, 34, 34)
+                            .addGap(30, 30, 30)
                             .addGroup(contentPaneLayout.createParallelGroup()
-                                .addComponent(label1, GroupLayout.PREFERRED_SIZE, 221, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(scrollPane1, GroupLayout.PREFERRED_SIZE, 189, GroupLayout.PREFERRED_SIZE)))
-                        .addGroup(contentPaneLayout.createSequentialGroup()
-                            .addGap(248, 248, 248)
-                            .addComponent(closeConnection))
+                                .addComponent(emailPrompt)
+                                .addComponent(attachmentPrompt)))
+                        .addGroup(GroupLayout.Alignment.TRAILING, contentPaneLayout.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(recipientPrompt)
+                            .addGap(18, 18, 18)))
+                    .addGroup(contentPaneLayout.createParallelGroup()
                         .addGroup(contentPaneLayout.createSequentialGroup()
                             .addGroup(contentPaneLayout.createParallelGroup()
-                                .addGroup(contentPaneLayout.createSequentialGroup()
-                                    .addGap(30, 30, 30)
-                                    .addGroup(contentPaneLayout.createParallelGroup()
-                                        .addComponent(attachmentPrompt)
-                                        .addComponent(emailPrompt)))
-                                .addGroup(GroupLayout.Alignment.TRAILING, contentPaneLayout.createSequentialGroup()
-                                    .addContainerGap()
-                                    .addComponent(recipientPrompt)))
-                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                                .addComponent(attachmentToSend, GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
-                                .addComponent(recipientTxtF, GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE)
-                                .addComponent(emailToSend, GroupLayout.DEFAULT_SIZE, 123, Short.MAX_VALUE))
+                                .addComponent(emailToSend, GroupLayout.PREFERRED_SIZE, 257, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(attachmentToSend, GroupLayout.PREFERRED_SIZE, 123, GroupLayout.PREFERRED_SIZE))
                             .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(label2, GroupLayout.PREFERRED_SIZE, 107, GroupLayout.PREFERRED_SIZE)
-                            .addGap(174, 174, 174)))
-                    .addContainerGap(124, Short.MAX_VALUE))
+                            .addComponent(scrollPane1, GroupLayout.PREFERRED_SIZE, 189, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(recipientTxtF, GroupLayout.PREFERRED_SIZE, 123, GroupLayout.PREFERRED_SIZE)
+                        .addGroup(contentPaneLayout.createSequentialGroup()
+                            .addGap(12, 12, 12)
+                            .addComponent(send)
+                            .addGap(297, 297, 297)
+                            .addComponent(read)
+                            .addGap(30, 30, 30)
+                            .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                .addComponent(delete)
+                                .addComponent(play))))
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(label1, GroupLayout.PREFERRED_SIZE, 221, GroupLayout.PREFERRED_SIZE)
+                    .addGap(7, 7, 7))
+                .addGroup(contentPaneLayout.createSequentialGroup()
+                    .addGroup(contentPaneLayout.createParallelGroup()
+                        .addGroup(contentPaneLayout.createSequentialGroup()
+                            .addGap(289, 289, 289)
+                            .addComponent(label2, GroupLayout.PREFERRED_SIZE, 107, GroupLayout.PREFERRED_SIZE))
+                        .addGroup(contentPaneLayout.createSequentialGroup()
+                            .addGap(370, 370, 370)
+                            .addComponent(closeConnection)))
+                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(GroupLayout.Alignment.TRAILING, contentPaneLayout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(scrollPane2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addGap(354, 354, 354))
         );
         contentPaneLayout.setVerticalGroup(
             contentPaneLayout.createParallelGroup()
                 .addGroup(contentPaneLayout.createSequentialGroup()
                     .addGroup(contentPaneLayout.createParallelGroup()
                         .addGroup(contentPaneLayout.createSequentialGroup()
+                            .addGap(31, 31, 31)
+                            .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(recipientTxtF, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(recipientPrompt))
+                            .addGap(44, 44, 44)
+                            .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(emailToSend, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(emailPrompt))
                             .addGroup(contentPaneLayout.createParallelGroup()
-                                .addGroup(contentPaneLayout.createSequentialGroup()
-                                    .addGap(31, 31, 31)
-                                    .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(recipientTxtF, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(recipientPrompt))
-                                    .addGap(28, 28, 28)
-                                    .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(attachmentPrompt)
-                                        .addComponent(attachmentToSend, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                                    .addGap(33, 33, 33)
-                                    .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(emailPrompt)
-                                        .addComponent(emailToSend, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-                                .addGroup(contentPaneLayout.createSequentialGroup()
-                                    .addGap(52, 52, 52)
-                                    .addComponent(scrollPane1, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(contentPaneLayout.createParallelGroup()
-                                .addGroup(contentPaneLayout.createSequentialGroup()
-                                    .addGap(9, 9, 9)
-                                    .addComponent(send))
                                 .addGroup(contentPaneLayout.createSequentialGroup()
                                     .addGap(26, 26, 26)
-                                    .addComponent(label1, GroupLayout.PREFERRED_SIZE, 123, GroupLayout.PREFERRED_SIZE))))
+                                    .addComponent(attachmentPrompt))
+                                .addGroup(contentPaneLayout.createSequentialGroup()
+                                    .addGap(20, 20, 20)
+                                    .addComponent(attachmentToSend, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
                         .addGroup(contentPaneLayout.createSequentialGroup()
-                            .addGap(16, 16, 16)
-                            .addComponent(label2)
-                            .addGap(165, 165, 165)
-                            .addComponent(read)))
-                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 110, Short.MAX_VALUE)
+                            .addGap(224, 224, 224)
+                            .addComponent(send))
+                        .addGroup(contentPaneLayout.createSequentialGroup()
+                            .addGap(14, 14, 14)
+                            .addComponent(label2))
+                        .addGroup(contentPaneLayout.createSequentialGroup()
+                            .addGap(71, 71, 71)
+                            .addGroup(contentPaneLayout.createParallelGroup()
+                                .addComponent(scrollPane1, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(label1, GroupLayout.PREFERRED_SIZE, 123, GroupLayout.PREFERRED_SIZE))
+                            .addGap(18, 18, 18)
+                            .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(read)
+                                .addComponent(play))))
+                    .addGap(31, 31, 31)
+                    .addComponent(delete)
+                    .addGap(17, 17, 17)
+                    .addComponent(scrollPane2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(closeConnection)
-                    .addGap(57, 57, 57))
+                    .addGap(26, 26, 26))
         );
         pack();
         setLocationRelativeTo(getOwner());
@@ -404,6 +468,10 @@ public class MultiEmailClient extends JFrame  {
     private JTextArea textArea1;
     private JLabel label1;
     private JLabel label2;
+    private JButton play;
+    private JScrollPane scrollPane2;
+    private JList list1;
+    private JButton delete;
     // JFormDesigner - End of variables declaration  //GEN-END:variables
 
 }
